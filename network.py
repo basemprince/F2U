@@ -1,0 +1,36 @@
+import torch
+from gan_model import Discriminator, Generator
+if torch.cuda.is_available():
+    dev = "cuda:0"
+else:
+    dev = "cpu"
+dev = torch.device(dev)
+
+class Server:
+    def __init__(self,id):
+        self.id = id
+        self.generator = Generator().to(dev)
+    def f2u_discriminator(self):
+        pass
+    
+
+class Worker:
+    def __init__(self,id):
+        self.id = id
+        self.x_data = []
+        self.y_data = []
+        self.discriminator = Discriminator().to(dev)
+        self.loss = 0
+    def load_worker_data(self,x,y):
+        self.x_data = x
+        self.y_data = y
+    def train(self):
+        pass
+    def calculate_loss(self):
+        pass
+    
+
+if __name__ == "__main__":
+    server = Server(0)
+    clinet = Worker(0)
+    print(server.id)
