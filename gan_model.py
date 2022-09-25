@@ -57,6 +57,13 @@ class Discriminator(nn.Module):
         output = self.main(input)
         return output.view(-1)
 
+
+def initialize_weights(model):
+    # Initializes weights
+    for m in model.modules():
+        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.BatchNorm2d)):
+            nn.init.normal_(m.weight.data, 0.0, 0.02)
+
 if __name__ == "__main__":
     netG = Generator()
     netD = Discriminator()
