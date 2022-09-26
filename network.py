@@ -24,6 +24,7 @@ class Worker:
         self.d_optimizer = torch.optim.Adam(self.discriminator.parameters(),lr=lr)
         self.loss_disc_real = None
         self.loss_disc_fake = None
+        self.loss_disc = None
     def load_worker_data(self,x,y):
         self.x_data = x
         self.y_data = y
