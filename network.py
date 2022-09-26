@@ -22,13 +22,12 @@ class Worker:
         self.y_data = []
         self.discriminator = Discriminator().to(dev)
         self.d_optimizer = torch.optim.Adam(self.discriminator.parameters(),lr=lr)
-        self.loss = 0
+        self.loss_disc_real = None
+        self.loss_disc_fake = None
     def load_worker_data(self,x,y):
         self.x_data = x
         self.y_data = y
     def train(self):
-        pass
-    def calculate_loss(self):
         pass
     
 

@@ -1,6 +1,13 @@
+import torch
 import torch.nn as nn
 from torch.nn.utils.parametrizations import spectral_norm
 from torchsummary import summary
+
+if torch.cuda.is_available():
+    dev = "cuda:0"
+else:
+    dev = "cpu"
+dev = torch.device(dev)
 
 class Generator(nn.Module):
 
@@ -24,7 +31,7 @@ class Generator(nn.Module):
         )
 
     def forward(self, input):
-        output = self.main(input)
+        output = self.main(input.to(dev))
         return output
 
 class Discriminator(nn.Module):
@@ -54,7 +61,7 @@ class Discriminator(nn.Module):
     def neuron_calculator(in_channels,padding,kernel_size,stride,out_channels):
         return (in_channels+2*padding-kernel_size)**2 * out_channels
     def forward(self, input):
-        output = self.main(input)
+        output = self.main(input.to(dev))
         return output.view(-1)
 
 
