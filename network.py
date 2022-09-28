@@ -11,6 +11,7 @@ class Server:
         self.id = id
         self.generator = Generator().to(dev)
         self.g_optimizer = torch.optim.Adam(self.generator.parameters(),lr=lr)
+        self.loss_gen = None
     def f2u_discriminator(self):
         pass
     
