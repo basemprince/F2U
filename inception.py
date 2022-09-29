@@ -4,7 +4,13 @@
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
+import torch
 
+if torch.cuda.is_available():
+    dev = "cuda:0"
+else:
+    dev = "cpu"
+dev = torch.device(dev)
 
 class InceptionV3(nn.Module):
     """Pretrained InceptionV3 network returning feature maps"""
@@ -60,7 +66,7 @@ class InceptionV3(nn.Module):
 
         self.blocks = nn.ModuleList()
 
-        inception = models.inception_v3(weights="pretrained")
+        inception = models.inception_v3(weights='DEFAULT')
 
         # Block 0: input to maxpool1
         block0 = [

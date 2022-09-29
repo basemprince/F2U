@@ -49,6 +49,17 @@ class Logger:
         self.writer.add_scalar(
             '{}/fake_pred'.format(self.comment), prediction_fake.mean(), step)
 
+
+    def log_fid(self, fid_score, epoch, n_batch, num_batches):
+       
+        # var_class = torch.autograd.variable.Variable
+        if isinstance(fid_score, torch.autograd.Variable):
+            fid_score = fid_score.data.cpu().numpy()
+
+        step = Logger._step(epoch, n_batch, num_batches)
+        self.writer.add_scalar(
+            '{}/fid_score'.format(self.comment), fid_score, step)
+
     def log_images(self, images, num_images, epoch, n_batch, num_batches,save_imgs=False, format='NCHW', normalize=True):
         '''
         input images are expected in format (NCHW)

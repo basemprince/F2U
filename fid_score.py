@@ -105,12 +105,11 @@ def get_activations(images, model, batch_size=50, dims=2048,
                   end='', flush=True)
         start = i * batch_size
         end = start + batch_size
-
         images = all_images[start:end]
         images.permute(0,3,1,2)
 
         if cuda:
-            iamges = images.cuda()
+            images = images.cuda()
 
         if images.size()[1] == 1:		#Make 3 channels instead of 1
             images = torch.cat((images,images,images),1)
