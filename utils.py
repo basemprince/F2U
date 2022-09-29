@@ -23,6 +23,7 @@ class Logger:
 
         # TensorBoard
         self.writer = SummaryWriter(comment=self.comment)
+        self.full_name = '{}{}'.format(self.writer.logdir,self.comment)
 
     def log(self, d_error, g_error,prediction_real, prediction_fake, epoch, n_batch, num_batches):
        
@@ -87,7 +88,7 @@ class Logger:
         plt.close()
 
     def _save_images(self, fig, epoch, n_batch, comment=''):
-        out_dir = 'runs/{}/images'.format(self.comment)
+        out_dir = '{}/images'.format(self.writer.logdir)
         Logger._make_dir(out_dir)
         fig.savefig('{}/{}_epoch_{}_batch_{}.png'.format(out_dir,
                                                          comment, epoch, n_batch), transparent=True)

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.parametrizations import spectral_norm
 from torchsummary import summary
+import matplotlib.pyplot as plt
 
 if torch.cuda.is_available():
     dev = "cuda:0"
@@ -56,6 +57,7 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(negative_slope= 0.1, inplace = True),
             nn.Flatten(), #flatten the output
             spectral_norm(nn.Linear(in_features =4096,out_features =1, bias = False))
+
         )
 
     def neuron_calculator(in_channels,padding,kernel_size,stride,out_channels):
@@ -76,3 +78,26 @@ if __name__ == "__main__":
     netD = Discriminator()
     summary(netG,(128,1,1))
     summary(netD,(3,32,32))
+
+    input_d = torch.randn((2000,3,32,32)).to(dev)
+    input_g = torch.randn((2000,128,1,1)).to(dev)
+
+    output_disc = netD(input_d)
+    output_disc = output_disc.cpu().detach().numpy()
+
+    plt.figure('discriminator')
+    plt.hist(output_disc.ravel(), bins=50, density=False)
+    plt.xlabel("output values")
+    plt.ylabel("frequency")
+
+
+    output_gen = netG(input_g)
+    output_gen = output_gen.cpu().detach().numpy()
+    plt.figure('generator')
+    plt.hist(output_gen[0].ravel(), bins=50, density=False)
+    plt.hist(output_gen[1].ravel(), bins=50, density=False)
+    plt.hist(output_gen[2].ravel(), bins=50, density=False)
+    plt.xlabel("output values")
+    plt.ylabel("frequency")
+
+    plt.show()
