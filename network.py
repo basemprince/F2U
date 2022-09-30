@@ -7,30 +7,28 @@ else:
 dev = torch.device(dev)
 
 class Server:
-    def __init__(self,id,lr):
+    def __init__(self,id,lr,b1,b2):
         self.id = id
         self.generator = Generator().to(dev)
-        self.g_optimizer = torch.optim.Adam(self.generator.parameters(),lr=lr)
+        self.g_optimizer = torch.optim.Adam(self.generator.parameters(),lr=lr,betas=(b1, b2))
         self.loss_gen = None
     def f2u_discriminator(self):
         pass
     
 
 class Worker:
-    def __init__(self,id,lr):
+    def __init__(self,id,lr,b1,b2):
         self.id = id
         self.x_data = []
         self.y_data = []
         self.discriminator = Discriminator().to(dev)
-        self.d_optimizer = torch.optim.Adam(self.discriminator.parameters(),lr=lr)
+        self.d_optimizer = torch.optim.Adam(self.discriminator.parameters(),lr=lr,betas=(b1, b2))
         self.loss_disc_real = None
         self.loss_disc_fake = None
         self.loss_disc = None
     def load_worker_data(self,x,y):
         self.x_data = x
         self.y_data = y
-    def train(self):
-        pass
     
 
 if __name__ == "__main__":

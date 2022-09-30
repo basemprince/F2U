@@ -74,9 +74,6 @@ class Logger:
         step = Logger._step(epoch, n_batch, num_batches)
         img_name = '{}/images{}'.format(self.comment, '')
 
-        # Make horizontal grid from image tensor
-        # horizontal_grid = vutils.make_grid(
-        #     images, normalize=normalize, scale_each=True)
         # Make vertical grid from image tensor
         nrows = int(np.sqrt(num_images))
         grid = vutils.make_grid(
@@ -123,13 +120,14 @@ class Logger:
         print('Discriminator Loss: {:.4f}, Generator Loss: {:.4f}'.format(d_error, g_error))
         print('D(x): {:.4f}, D(G(z)): {:.4f}'.format(d_pred_real.mean(), d_pred_fake.mean()))
 
-    def save_models(self, generator, discriminator, epoch):
-        out_dir = './data/models/{}'.format(self.data_subdir)
+    def save_models(self, server, workers, epoch):
+        out_dir = '{}/models'.format(self.writer.logdir)
         Logger._make_dir(out_dir)
-        torch.save(generator.state_dict(),
+        torch.save(server.generator.state_dict(),
                    '{}/G_epoch_{}'.format(out_dir, epoch))
-        torch.save(discriminator.state_dict(),
-                   '{}/D_epoch_{}'.format(out_dir, epoch))
+        for i, worker in enumerate(workers):
+            torch.save(worker.discriminator.state_dict(),
+                   '{}/D{}_epoch_{}'.format(out_dir,i, epoch))
 
     def close(self):
         self.writer.close()
