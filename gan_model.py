@@ -56,8 +56,8 @@ class Discriminator(nn.Module):
             spectral_norm(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=4, stride=2, padding=1, bias = False)),
             nn.LeakyReLU(negative_slope= 0.1, inplace = True),
             nn.Flatten(), #flatten the output
-            spectral_norm(nn.Linear(in_features =4096,out_features =1, bias = False))
-
+            spectral_norm(nn.Linear(in_features =4096,out_features =1, bias = False)),
+            nn.Sigmoid()
         )
 
     def neuron_calculator(in_channels,padding,kernel_size,stride,out_channels):
