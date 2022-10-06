@@ -50,6 +50,26 @@ class Logger:
             '{}/fake_pred'.format(self.comment), prediction_fake.mean(), step)
 
 
+    def log_workers(self, workers, epoch, n_batch, num_batches):
+       
+        # var_class = torch.autograd.variable.Variable
+        step = Logger._step(epoch, n_batch, num_batches)
+        
+        w1 = workers[0].loss_disc_fake.data.cpu().numpy()
+        w2 = workers[1].loss_disc_fake.data.cpu().numpy()
+        w3 = workers[2].loss_disc_fake.data.cpu().numpy()
+        w4 = workers[3].loss_disc_fake.data.cpu().numpy()
+        w5 = workers[4].loss_disc_fake.data.cpu().numpy()
+        self.writer.add_scalars(
+            '{}/worker_loss/'.format(self.comment), {
+                'worker0': w1,
+                'worker1': w2,
+                'worker2': w3,
+                'worker3': w4,
+                'worker4': w5,
+                }, step)
+
+
     def log_fid(self, fid_score, epoch, n_batch, num_batches):
        
         # var_class = torch.autograd.variable.Variable

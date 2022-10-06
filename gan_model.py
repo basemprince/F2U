@@ -76,6 +76,7 @@ def initialize_weights(model):
 if __name__ == "__main__":
     netG = Generator()
     netD = Discriminator()
+    initialize_weights(netG)
     summary(netG,(128,1,1))
     summary(netD,(3,32,32))
 
@@ -94,9 +95,11 @@ if __name__ == "__main__":
     output_gen = netG(input_g)
     output_gen = output_gen.cpu().detach().numpy()
     plt.figure('generator')
-    plt.hist(output_gen[0].ravel(), bins=50, density=False)
-    plt.hist(output_gen[1].ravel(), bins=50, density=False)
-    plt.hist(output_gen[2].ravel(), bins=50, density=False)
+    bin_size = 100
+    plt.hist(output_gen[2].ravel(), bins=bin_size,color='b', density=False)
+    plt.hist(output_gen[0].ravel(), bins=bin_size,fc='r', density=False)
+    plt.hist(output_gen[1].ravel(), bins=bin_size,color='g', density=False)
+
     plt.xlabel("output values")
     plt.ylabel("frequency")
 

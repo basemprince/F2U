@@ -10,9 +10,11 @@ dev = torch.device(dev)
 class Server:
     def __init__(self,id,lr,b1,b2):
         self.id = id
+        self.global_disc = Discriminator().to(dev)
         self.generator = Generator().to(dev)
         self.g_optimizer = torch.optim.Adam(self.generator.parameters(),lr=lr,betas=(b1, b2))
         self.loss_gen = None
+
     def f2u_discriminator(self):
         pass
     def f2a_discriminator(self):
