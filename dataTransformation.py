@@ -241,6 +241,79 @@ def distribute_data_labels4clients(X_data, y_label, labels4clients_dict, random_
     
     return data_lst, label_lst
     
+def distribute_data_per_client_edited(X_data, y_label, labels4clients_dict,CLASSES_PER_USER, random_seed = True, max_samples_per_client = None):
+    #distribute data to each client according to the dict obtain from labels4clients function
+    #max_samples_per_client is an integer for the number of samples each client should have
+    
+    def _reset_seeds(seed=42):
+        os.environ['PYTHONHASHSEED']=str(seed)
+        np.random.seed(seed)
+        random.seed(seed)
+    
+    def _cli_in_dict(labels4clients_dict): #get the client numbers
+        lst = []
+        for el in labels4clients_dict:
+            lst.extend(labels4clients_dict[el])
+        return np.unique(np.array(lst))
+    
+    def _shuffle_data(data_list, label_list):
+        for cli in range(len(data_list)):
+            p = np.random.permutation(data_list[cli].shape[0])
+            data_list[cli] = data_list[cli][p]
+            label_list[cli] = label_list[cli][p]
+        return data_list, label_list    
+    
+    labels = np.unique(y_label)
+    num_labels = len(labels)
+    dict_keys = list(labels4clients_dict.keys())
+    avail_clients = _cli_in_dict(labels4clients_dict)
+
+    assert set(labels).issuperset(set(dict_keys)), 'The label keys in labels4clients_dict are not a subset of y_label'
+    
+    if random_seed==True:
+        pass
+    elif isinstance(random_seed,int):
+        _reset_seeds(random_seed)
+    else:
+        _reset_seeds()
+    
+    # n_samp_per_lbl = int(len(y_label)//(len(avail_clients)*CLASSES_PER_USER)) #assumes same amount of samples per label
+    n_samp_per_lbl = int(len(y_label)//num_labels) #assumes same amount of samples per label
+
+    n_samp_per_lbl_array = []
+    for label in labels4clients_dict.values():
+        num_clients = len(label)
+        if num_clients !=0:
+            n_samp_per_lbl_cli = int(n_samp_per_lbl//num_clients)
+        else:
+            n_samp_per_lbl_cli = 0
+        n_samp_per_lbl_array.append(n_samp_per_lbl_cli)
+
+    # n_cli_per_lbl = len(labels4clients_dict[dict_keys[0]]) #assumes same amount of clients per label
+    # n_samp_per_lbl_cli = int(n_samp_per_lbl//n_cli_per_lbl)
+
+    # if isinstance(max_samples_per_client,int):
+    #     n_samp_per_lbl_cli = min(n_samp_per_lbl_cli, max_samples_per_client)
+
+    cli_data_dict = dict()
+    cli_lbl_dict = dict()
+    for el in avail_clients:
+        cli_data_dict[el] = []
+        cli_lbl_dict[el] = []
+    
+    for i, lbl in enumerate(labels4clients_dict):
+        ind = np.random.permutation(np.where(y_label==lbl)[0])
+        current_n_samp = n_samp_per_lbl_array[i]
+        for k, cli in enumerate(labels4clients_dict[lbl]):
+            cli_data_dict[cli].extend(X_data[ind[k*current_n_samp:(k+1)*current_n_samp]])
+            cli_lbl_dict[cli].extend(y_label[ind[k*current_n_samp:(k+1)*current_n_samp]])
+    
+    data_lst = [np.array(cli_data_dict[el]) for el in cli_data_dict]
+    label_lst = [np.array(cli_lbl_dict[el]) for el in cli_lbl_dict]
+    
+    data_lst, label_lst = _shuffle_data(data_lst, label_lst)
+    
+    return data_lst, label_lst
 
 def distribute_data_labels4clients_wrapper(data, one_hot_lab, labels4clients_dict, random_seed = True, max_samples_per_client = None):
     #takes in one-hot labels instead of int labels

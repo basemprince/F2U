@@ -32,28 +32,29 @@ class Generator(nn.Module):
         )
 
     def forward(self, input):
-        output = self.main(input.to(dev))
+        output = self.main(input)
         return output
 
 class Discriminator(nn.Module):
 
     def __init__(self):
         super(Discriminator, self).__init__()
+        self.power_iters = 1
         self.main = nn.Sequential(
-            spectral_norm(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1, bias = False)),
+            spectral_norm(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1, bias = False),n_power_iterations=self.power_iters),
             nn.LeakyReLU(negative_slope= 0.1, inplace = True),
 
-            spectral_norm(nn.Conv2d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1, bias = False)),
+            spectral_norm(nn.Conv2d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1, bias = False),n_power_iterations=self.power_iters),
             nn.LeakyReLU(negative_slope= 0.1, inplace = True),
 
-            spectral_norm(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1, bias = False)),
+            spectral_norm(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1, bias = False),n_power_iterations=self.power_iters),
             nn.LeakyReLU(negative_slope= 0.1, inplace = True),
 
-            spectral_norm(nn.Conv2d(in_channels=128, out_channels=128, kernel_size=4, stride=2, padding=1, bias = False)),
+            spectral_norm(nn.Conv2d(in_channels=128, out_channels=128, kernel_size=4, stride=2, padding=1, bias = False),n_power_iterations=self.power_iters),
             nn.LeakyReLU(negative_slope= 0.1, inplace = True),
 
             # need to calculate the number of neurons in this layer to connect each of their outputs to the next layer
-            spectral_norm(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=4, stride=2, padding=1, bias = False)),
+            spectral_norm(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=4, stride=2, padding=1, bias = False),n_power_iterations=self.power_iters),
             nn.LeakyReLU(negative_slope= 0.1, inplace = True),
             nn.Flatten(), #flatten the output
             spectral_norm(nn.Linear(in_features =4096,out_features =1, bias = False))
@@ -63,7 +64,7 @@ class Discriminator(nn.Module):
     def neuron_calculator(in_channels,padding,kernel_size,stride,out_channels):
         return (in_channels+2*padding-kernel_size)**2 * out_channels
     def forward(self, input):
-        output = self.main(input.to(dev))
+        output = self.main(input)
         return output.view(-1)
 
 
@@ -71,7 +72,7 @@ def initialize_weights(model):
     # Initializes weights
     for m in model.modules():
         if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.BatchNorm2d)):
-            nn.init.normal_(m.weight.data, 0.0, 0.02)
+            nn.init.normal_(m.weight.data, mean= 0.0, std=0.02)
 
 if __name__ == "__main__":
     netG = Generator()
