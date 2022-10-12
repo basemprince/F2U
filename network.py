@@ -16,8 +16,16 @@ class Server:
 
     def f2u_discriminator(self):
         pass
-    def f2a_discriminator(self):
-        pass
+    
+    def weighted_fed_average(self,w,contribution):
+        w_avg = copy.deepcopy(w[0])
+        for k in w_avg.keys():
+            tmp = torch.zeros_like(w[0][k],dtype= torch.float32).to(self.dev)
+            for i in range(len(w)):
+                tmp+=w[i][k]*contribution[i]
+            w_avg[k].copy_(tmp)
+        return w_avg
+
     def fed_average(self,w):
         w_avg = copy.deepcopy(w[0])
         for k in w_avg.keys():
