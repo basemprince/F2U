@@ -50,6 +50,14 @@ class Logger:
             '{}/fake_pred'.format(self.comment), prediction_fake.mean(), step)
 
 
+    def log_params(self,param_list,global_params):
+        file_name = '{}/parameters.txt'.format(self.writer.logdir)
+        f= open(file_name,"w+")
+        for param in global_params:
+            if param[0] in param_list:
+                f.write(param[0] + "=  %s\r\n" % (param[1]))
+        f.close()   
+
     def log_workers(self, workers, epoch, n_batch, num_batches):
        
         # var_class = torch.autograd.variable.Variable
