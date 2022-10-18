@@ -56,6 +56,7 @@ class Logger:
         for param in global_params:
             if param[0] in param_list:
                 f.write(param[0] + "=  %s\r\n" % (param[1]))
+                print(param[0] + "=  %s\r\n" % (param[1]))
         f.close()   
 
     def log_workers(self, workers, epoch, n_batch, num_batches):
