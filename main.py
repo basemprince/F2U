@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import os
 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':16:8'
 
 
-# In[2]:
+# In[ ]:
 
 
 import numpy as np
@@ -17,6 +17,7 @@ import torch.nn as nn
 from torch.nn.utils.parametrizations import spectral_norm
 from torch.autograd import Variable
 from torchvision import datasets, transforms, utils
+# import seaborn as sns
 import matplotlib.pyplot as plt
 from dataTransformation import labels4clients, distribute_data_labels4clients, distribute_data_per_client_edited
 from gan_model import Discriminator, Generator, initialize_weights
@@ -28,7 +29,7 @@ from inception import *
 import math
 
 
-# In[3]:
+# In[ ]:
 
 
 seed = 42
@@ -39,7 +40,7 @@ torch.use_deterministic_algorithms(True)
 # torch.backends.cudnn.deterministic = True
 
 
-# In[4]:
+# In[ ]:
 
 
 if torch.cuda.is_available():
@@ -49,12 +50,12 @@ else:
 dev = torch.device(dev)
 
 
-# In[5]:
+# In[ ]:
 
 
 NUM_WORKERS = 2
 CLASSES_PER_USER = 2
-WORKER_OVERRIDE = True # overrides other workers weights with the chosen worker
+WORKER_OVERRIDE = False # overrides other workers weights with the chosen worker
 NUM_EPOCHS = 200
 BATCH_SIZE = 16
 
@@ -68,7 +69,7 @@ FID_BATCH_SIZE = 20
 NUM_UNIQUE_USERS = NUM_WORKERS
 
 
-# In[6]:
+# In[ ]:
 
 
 limit_classes = True
@@ -78,7 +79,7 @@ trainig_strategies = {0:'fed_avg', 1:'weighted_avg_most',2:'weighted_avg_least',
 trainig_strategies = trainig_strategies[chosen_strategy]
 
 
-# In[7]:
+# In[ ]:
 
 
 trans_cifar = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -91,7 +92,7 @@ dataloader_test = torch.utils.data.DataLoader(dataset_test, shuffle = True,batch
 MAX_WORKER_SAMPLE = len(dataset)/NUM_WORKERS
 
 
-# In[8]:
+# In[ ]:
 
 
 num_classes = 10
@@ -125,14 +126,14 @@ if limit_classes:
 print(dictionary)
 
 
-# In[11]:
+# In[ ]:
 
 
 for img in dataloader_test:
     test_imgs=img[0].to(dev)
 
 
-# In[10]:
+# In[ ]:
 
 
 # print(dataset.data[0])
@@ -140,10 +141,16 @@ for img in dataloader_test:
 # print(dataset.transforms(dataset.data[0],trans_cifar))
 
 
-# In[12]:
+# In[ ]:
 
 
 transformed = trans_cifar(dataset.data[0]).cpu().detach().numpy()
+print("transformed shape:", transformed.shape)
+plt.figure('normalized data')
+plt.hist(transformed.ravel(), bins=50, density=False)
+plt.xlabel("pixel values")
+plt.ylabel("frequency")
+plt.show()
 
 
 # In[ ]:
@@ -175,6 +182,16 @@ x_train_normalized_np[0][0].shape
 # In[ ]:
 
 
+plt.figure('normalized data')
+bin_size = 60
+plt.hist(x_train_normalized_np[:][0].ravel(),color='r', bins=bin_size, density=False)
+plt.hist(x_train_normalized_np[:][1].ravel(),color='g', bins=bin_size, density=False)
+plt.hist(x_train_normalized_np[:][2].ravel(),color='b', bins=bin_size, density=False)
+plt.xlabel("pixel values")
+plt.ylabel("frequency")
+plt.show()
+
+
 # In[ ]:
 
 
@@ -202,6 +219,12 @@ for i, x in enumerate(x_client_list):
 # In[ ]:
 
 
+# def getDist(y,class_list,user_num):
+#     # ax = sns.barplot(x=class_list,y=y)
+#     ax.set(title="Count of data classes for %s" %user_num)
+#     plt.show()
+
+
 # In[ ]:
 
 
@@ -211,6 +234,7 @@ for i in range (len(x_client_list)):
     length = len(y_client_list[i])
     total_data+= length
     y_list = np.bincount(y_client_list[i],minlength=num_classes)
+    # getDist(y_list,class_list,i)
 print("total used data", total_data)
 
 
@@ -275,6 +299,14 @@ for worker in workers:
 # In[ ]:
 
 
+for worker in worker_loaders:
+    plt.figure('normalized data')
+    plt.hist(worker[:][1].ravel(),color='r', bins=bin_size, density=False)
+    # plt.hist(x_train_normalized_np[:][1].ravel(),color='g', bins=bin_size, density=False)
+    # plt.hist(x_train_normalized_np[:][2].ravel(),color='b', bins=bin_size, density=False)
+    plt.xlabel("pixel values")
+    plt.ylabel("frequency")
+    plt.show()
 
 
 # In[ ]:
@@ -420,8 +452,8 @@ for epoch in range(start,end):
         if batch_id % 100 == 0:
             fid_z = torch.randn(FID_BATCH_SIZE, NOISE_DIM, 1,1).to(dev)
             gen_imgs = main_server.generator(fid_z.detach())
-            mu_gen, sigma_gen = calculate_activation_statistics(gen_imgs, fic_model, batch_size=FID_BATCH_SIZE,cuda=True)
-            mu_test, sigma_test = calculate_activation_statistics(test_imgs[:FID_BATCH_SIZE], fic_model, batch_size=FID_BATCH_SIZE,cuda=True)
+            mu_gen, sigma_gen = calculate_activation_statistics(gen_imgs, fic_model, batch_size=FID_BATCH_SIZE,cuda=True,verbose=False)
+            mu_test, sigma_test = calculate_activation_statistics(test_imgs[:FID_BATCH_SIZE], fic_model, batch_size=FID_BATCH_SIZE,cuda=True,verbose=False)
             fid = calculate_frechet_distance(mu_gen, sigma_gen, mu_test, sigma_test)
             logger.log_fid(fid,epoch,batch_id,len(worker_loaders[0]))
 
@@ -437,11 +469,14 @@ for epoch in range(start,end):
         logger.log_images(fake,len(fake), epoch, batch_id, len(worker_loaders[0]))
 
     chosen_w_np = worker_contribution_cum.detach().cpu().numpy()
-    plt.bar(range(len(chosen_w_np)),chosen_w_np)
+    ra = range(1,len(chosen_w_np)+1)
+    plt.bar(ra,chosen_w_np)
+    plt.xticks(ra)
     plt.xlabel('worker number')
     plt.ylabel('contribution')
     plt.savefig('{}/worker_cont.png'.format(logger.writer.logdir))
     plt.show()
+
     if (epoch+1) % 50 == 0 and epoch != 0:
         logger.save_models(main_server,workers,epoch)
 
