@@ -1,0 +1,10 @@
+NUM_WORKERS=  2
+CLASSES_PER_USER=  2
+WORKER_OVERRIDE=  True
+NUM_EPOCHS=  200
+BATCH_SIZE=  16
+LEARNING_RATE_D=  0.0002
+LEARNING_RATE_G=  0.0002
+limit_classes=  True
+Discriminator_trainig_iterations=  2
+trainig_strategies=  least_forgiving
